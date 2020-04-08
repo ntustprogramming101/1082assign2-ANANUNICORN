@@ -205,6 +205,9 @@ void draw() {
           soldierX = 40;
           soldierY = random(160,480);
           life = 2;
+          eatCabbage = false;
+          cabbageX = random(40,width - 40);
+          cabbageY = random(160,480);
           }
         }
     
