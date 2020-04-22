@@ -16,6 +16,10 @@ PImage gameoverImg;
 
 PImage cabbageImg;
 
+PImage groundhogDownImg;
+PImage groundhogLeftImg;
+PImage groundhogRightImg;
+
   
 int x, y;//size CENTER
   
@@ -27,6 +31,8 @@ float soldierY;
 final int GAME_RUN = 0;
 final int GAME_LOSE = 1;
 final int GAME_START = 2;
+final int ONE_BLOCK = 80;
+final int GROUNDHOG_W = 80 , GROUNDHOG_H = 80;
 
 int gameState = 2;
 
@@ -37,13 +43,20 @@ int startNormalH = 60;
 
 int life = 2;
 
-int groundhogX = 360;
-int groundhogY = 120;
+float groundhogX = 360;
+float groundhogY = 120;
+
+int actionFrame; //groundhog's moving frame 
+float lastTime; 
+float groundhogLestX, groundhogLestY;
 
 float cabbageX = 0;
 float cabbageY = 0;
 
 boolean eatCabbage = false;
+boolean downPressed = false;
+boolean leftPressed = false;
+boolean rightPressed = false;
   
   
 
@@ -58,6 +71,8 @@ void setup() {
   
   cabbageX = random(40,width - 40);
   cabbageY = random(160,480);
+  
+  frameRate(60);
 
   bgImg = loadImage("img/bg.jpg");
   groundhogImg = loadImage("img/groundhogIdle.png");
@@ -76,6 +91,10 @@ void setup() {
   gameoverImg = loadImage("img/gameover.jpg");
   
   cabbageImg = loadImage("img/cabbage.png");
+  
+  groundhogDownImg = loadImage("img/groundhogDown.png");
+  groundhogLeftImg = loadImage("img/groundhogLeft.png");
+  groundhogRightImg = loadImage("img/groundhogRight.png");
 }
 
 void draw() {
@@ -117,7 +136,7 @@ void draw() {
      image(soilImg,x,y+80);
      
      //groundhog
-     image(groundhogImg,groundhogX,groundhogY);
+    // image(groundhogImg,groundhogX,groundhogY);
      if(groundhogX < 0 + 40){
        groundhogX = 40;
      }
@@ -133,7 +152,42 @@ void draw() {
      if(groundhogY > height - 40){
        groundhogY = height - 40;
      }
-    
+     if (downPressed == false && leftPressed == false && rightPressed == false) {
+      image(groundhogImg, groundhogX, groundhogY, GROUNDHOG_W, GROUNDHOG_H);
+    }
+    //draw the groundhogDown image between 1-14 frames
+    if (downPressed) {
+      actionFrame++;
+      if (actionFrame > 0 && actionFrame < 15) {
+        groundhogY += ONE_BLOCK / 15.0;
+        image(groundhogDownImg, groundhogX, groundhogY, GROUNDHOG_W, GROUNDHOG_H);
+      } else {
+        groundhogY = groundhogLestY + ONE_BLOCK;
+        downPressed = false;
+      }
+    }
+    //draw the groundhogLeft image between 1-14 frames
+    if (leftPressed) {
+      actionFrame++;
+      if (actionFrame > 0 && actionFrame < 15) {
+        groundhogX -= ONE_BLOCK / 15.0;
+        image(groundhogLeftImg, groundhogX, groundhogY, GROUNDHOG_W, GROUNDHOG_H);
+      } else {
+        groundhogX = groundhogLestX - ONE_BLOCK;
+        leftPressed = false;
+      }
+    }
+    //draw the groundhogRight image between 1-14 frames
+    if (rightPressed) {
+      actionFrame++;
+      if (actionFrame > 0 && actionFrame < 15) {
+        groundhogX += ONE_BLOCK / 15.0;
+        image(groundhogRightImg, groundhogX, groundhogY, GROUNDHOG_W, GROUNDHOG_H);
+      } else {
+        groundhogX = groundhogLestX + ONE_BLOCK;
+        rightPressed = false;
+      }
+    }
      
      //life
      for(int i = 0; i < life; i++){
@@ -154,6 +208,9 @@ void draw() {
           life--;
           groundhogX = 360;
           groundhogY = 120;
+          downPressed = false; 
+          leftPressed = false;
+          rightPressed = false;
         }
         
      if(life == 0){
@@ -208,6 +265,9 @@ void draw() {
           eatCabbage = false;
           cabbageX = random(40,width - 40);
           cabbageY = random(160,480);
+          downPressed = false; 
+          leftPressed = false;
+          rightPressed = false;
           }
         }
     
@@ -216,46 +276,34 @@ void draw() {
 }
 
 void keyPressed(){
-  switch(keyCode){
-   case UP: 
-   if(groundhogY <= 120){
-     groundhogY = 120;
-   }
-   else{
-     groundhogY -= 80;
-   }
-  
-   break;
-   
-   case DOWN: 
-   if(groundhogY >= height - 40){
-     groundhogY = height - 40;
-   }
-   else{
-     groundhogY += 80;
-   }
-  
-   break;
-   
-   case RIGHT: 
-   if(groundhogX >= width - 40){
-     groundhogX = width - 40;
-   }
-   else{
-     groundhogX += 80;
-   }
-  
-   break;
-   
-   case LEFT: 
-   if(groundhogX <= 40){
-     groundhogX = 40;
-   }
-   else{
-     groundhogX -= 80;
-   }
-  
-   break;
+float newTime = millis(); //time when the groundhog started moving
+  if (key == CODED) {
+    switch (keyCode) {
+    case DOWN:
+      if (newTime - lastTime > 250) {
+        downPressed = true;
+        actionFrame = 0;
+        groundhogLestY = groundhogY;
+        lastTime = newTime;
+      }
+      break;
+    case LEFT:
+      if (newTime - lastTime > 250) {
+        leftPressed = true;
+        actionFrame = 0;
+        groundhogLestX = groundhogX;
+        lastTime = newTime;
+      }
+      break;
+    case RIGHT:
+      if (newTime - lastTime > 250) {
+        rightPressed = true;
+        actionFrame = 0;
+        groundhogLestX = groundhogX;
+        lastTime = newTime;
+      }
+      break;
+    }
   }
 }
 ////////
